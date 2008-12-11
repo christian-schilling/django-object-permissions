@@ -190,3 +190,18 @@ class TestObjectPermissions(TestCase):
 
         self.assertEqual(UserObjectPermission.objects.filter(object_id=p1.id).count(),1)
         self.assertEqual(GroupObjectPermission.objects.filter(object_id=p1.id).count(),1)
+
+    def test_change_all_permission(self):
+        p1 = Post.objects.create(title='post1',text='Post1 text')
+        p2 = Post.objects.create(title='post2',text='Post2 text')
+
+        result = self.client.login(username="testuser",password="testuser")
+        self.assertEqual(result,True)
+        ct_type = ContentType.objects.get_for_model(Post)
+        Permission.objects.get(name='Can change ALL post',content_type=ct_type).user_set.add(self.testuser)
+
+        response = self.client.get("/admin/object_permissions_testapp/post/%s/"%(p1.pk))
+        self.assertEqual(response.status_code,200)
+        response = self.client.get("/admin/object_permissions_testapp/post/%s/"%(p2.pk))
+        self.assertEqual(response.status_code,200)
+

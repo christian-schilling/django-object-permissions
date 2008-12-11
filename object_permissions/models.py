@@ -20,7 +20,9 @@ class GroupObjectPermission(ObjectPermission):
 
 class UserObjectPermissionManager(models.Manager):
     def is_changeable(self,model,object_id,user):
-        if user.is_superuser: return True
+        permname = model._meta.app_label+'.changeall_'+model._meta.object_name.lower()
+        if user.has_perm(permname):
+            return True
         ct_type = ContentType.objects.get_for_model(model)
         if self.model.objects.filter(
                 content_type=ct_type,
@@ -39,7 +41,9 @@ class UserObjectPermissionManager(models.Manager):
         return False
 
     def is_deleteable(self,model,object_id,user):
-        if user.is_superuser: return True
+        permname = model._meta.app_label+'.changeall_'+model._meta.object_name.lower()
+        if user.has_perm(permname):
+            return True
         ct_type = ContentType.objects.get_for_model(model)
         if self.model.objects.filter(
                 content_type=ct_type,
@@ -60,7 +64,9 @@ class UserObjectPermissionManager(models.Manager):
         return False
 
     def changeable(self,model,user):
-        if user.is_superuser: return model.objects.all()
+        permname = model._meta.app_label+'.changeall_'+model._meta.object_name.lower()
+        if user.has_perm(permname):
+            return model.objects.all()
         ct_type = ContentType.objects.get_for_model(model)
         userperms = self.model.objects.filter(
             content_type=ct_type,
