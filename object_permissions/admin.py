@@ -66,19 +66,3 @@ class ObjectPermissionsAdmin(admin.ModelAdmin):
             )
         except:
             pass
-
-    def changelist_view(self,request,extra_context=None):
-        """
-        Allows the "changelist_view" to be seen by anyone.
-        """
-        # This is needed for the raw_id_admin related lookups to actually
-        # show the list to every user when he clicks on the lookup icon.
-        # It is quite an ugly HACK but i don't see how django allows this to
-        # to be implemented in a clean way.
-        tmp = self.has_change_permission
-        def always_true(*args): return True
-        self.has_change_permission = always_true
-        retval = super(ObjectPermissionsAdmin,self).changelist_view(request,extra_context)
-        self.has_change_permission = tmp
-        return retval
-
