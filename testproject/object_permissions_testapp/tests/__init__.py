@@ -2,16 +2,6 @@ from django.test import TestCase
 from django.contrib.auth.models import User,Group,Permission
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
-import datetime
-import sys
-import os
-
-from django.core import management
-from django.conf import settings
-
-# Add the tests directory so the object_permissions_testapp is on sys.path
-test_root = os.path.dirname(__file__)
-sys.path.append(test_root)
 
 # Import object_permissions_testapp's models
 import object_permissions_testapp.models
@@ -21,29 +11,6 @@ from object_permissions.models import UserObjectPermission,GroupObjectPermission
 class TestObjectPermissions(TestCase):
 
     def setUp(self):
-        """Swaps out various Django calls for fake ones for our own nefarious purposes."""
-        def new_get_apps():
-            return [object_permissions_testapp.models]
-        from django.db import models
-        from django.conf import settings
-        models.get_apps_old, models.get_apps = models.get_apps, new_get_apps
-        settings.INSTALLED_APPS, settings.OLD_INSTALLED_APPS = (
-            [
-                "django.contrib.auth",
-                "django.contrib.admin",
-                "django.contrib.sessions",
-                "object_permissions_testapp",
-                "object_permissions",
-            ],
-            settings.INSTALLED_APPS,
-        )
-        settings.TEMPLATE_DIRS, settings.OLD_TEMPLATE_DIRS = (
-            (),
-            settings.TEMPLATE_DIRS,
-        )
-        self.redo_app_cache()
-        management.call_command('syncdb')
-
         self.testuser = User.objects.create_user("testuser","testuser","testuser")
         self.testuser2 = User.objects.create_user("testuser2","testuser2","testuser2")
         self.testgroup = Group.objects.create(name=Site.objects.get_current().domain)
@@ -58,24 +25,10 @@ class TestObjectPermissions(TestCase):
         self.testuser2.save()
 
     def tearDown(self):
-        """Undoes what monkeypatch did."""
-        from django.db import models
-        from django.conf import settings
-        models.get_apps = models.get_apps_old
-        settings.INSTALLED_APPS = settings.OLD_INSTALLED_APPS
-        settings.TEMPLATE_DIRS = settings.OLD_TEMPLATE_DIRS
-        self.redo_app_cache()
-
-        # Also delete all model instances
+        # delete all model instances
         Post.objects.all().delete()
         self.testuser.delete()
         self.testgroup.delete()
-
-    def redo_app_cache(self):
-        from django.db.models.loading import AppCache
-        a = AppCache()
-        a.loaded = False
-        a._populate()
 
     def test_no_permission_change(self):
         result = self.client.login(username="testuser",password="testuser")
