@@ -29,6 +29,12 @@ class ObjectPermissionsAdmin(admin.ModelAdmin):
     def queryset(self,request):
         return UserObjectPermission.objects.changeable(self.model,request.user)
 
+    def is_changeable(self,model,object_id,request):
+        return UserObjectPermission.objects.is_changeable(self.model,object_id,request.user)
+
+    def is_deleteable(self,model,object_id,request):
+        return UserObjectPermission.objects.is_deleteable(self.model,object_id,request.user)
+
     def add_view(self,request,*args,**kwargs):
         self.inline_instances = [i for i in self.all_inline_instances
                                     if check_inline_perm(request.user,i)]
@@ -37,12 +43,12 @@ class ObjectPermissionsAdmin(admin.ModelAdmin):
     def change_view(self,request,object_id,extra_context=None):
         self.inline_instances = [i for i in self.all_inline_instances
                                     if check_inline_perm(request.user,i)]
-        if UserObjectPermission.objects.is_changeable(self.model,object_id,request.user):
+        if self.is_changeable(self.model,object_id,request):
             return super(ObjectPermissionsAdmin,self).change_view(request,object_id,extra_context)
         raise PermissionDenied
 
     def delete_view(self,request,object_id,extra_context=None):
-        if UserObjectPermission.objects.is_deleteable(self.model,object_id,request.user):
+        if self.is_deleteable(self.model,object_id,request):
             return super(ObjectPermissionsAdmin,self).delete_view(request,object_id,extra_context)
         raise PermissionDenied
 
