@@ -21,7 +21,7 @@ def check_inline_perm(user,inline):
 class ObjectPermissionsAdmin(admin.ModelAdmin):
 
     def __init__(self,model,admin_site):
-        self.inlines = [i for i in self.inlines+[UserPermissionInline,GroupPermissionInline]]
+        self.inlines = [i for i in list(self.inlines)+[UserPermissionInline,GroupPermissionInline]]
         retval = super(ObjectPermissionsAdmin,self).__init__(model,admin_site)
         self.all_inline_instances = self.inline_instances
         return retval
